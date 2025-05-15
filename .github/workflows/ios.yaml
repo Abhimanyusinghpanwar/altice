@@ -40,3 +40,4 @@ jobs:
             PROVISIONING_PROFILE_SPECIFIER="dev" \
             DEVELOPMENT_TEAM="FVQ7629G77" \
             CODE_SIGN_IDENTITY="iPhone Distribution"
+            -allowProvisioningUpdates
