@@ -1,0 +1,43 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-ios:
+    name: Build iOS App for Dev
+    runs-on: macos-latest
+    environment: dev
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up keychain and import certificate
+        run: |
+          echo "${{ secrets.IOS_CERT_BASE64 }}" | base64 --decode > certificate.p12
+          security create-keychain -p temp-pass build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p temp-pass build.keychain
+          security import certificate.p12 -k build.keychain -P "${{ secrets.IOS_CERT_PASSWORD }}" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k temp-pass build.keychain
+
+      - name: Install provisioning profile
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.IOS_PROFILE_DEV_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/dev.mobileprovision
+
+      - name: Build the app with xcodebuild
+        run: |
+          xcodebuild -scheme "CustSupportApp" \
+            -archivePath $RUNNER_TEMP/CustSupportApp.xcarchive \
+            -sdk iphoneos \
+            -target CustSupportApp \
+            -project CustSupportApp \
+            -destination generic/platform=iOS \
+            IPHONEOS_DEPLOYMENT_TARGET=15.0 \
+            clean archive \
+            PROVISIONING_PROFILE_SPECIFIER="dev" \
+            DEVELOPMENT_TEAM="FVQ7629G77" \
+            CODE_SIGN_IDENTITY="iPhone Distribution"
