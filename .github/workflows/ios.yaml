@@ -33,7 +33,7 @@ jobs:
           xcodebuild -scheme "CustSupportApp" \
             -archivePath $RUNNER_TEMP/CustSupportApp.xcarchive \
             -sdk iphoneos \
-            -project CustSupportApp \
+            -project CustSupportApp.xcodeproj \
             -destination generic/platform=iOS \
             IPHONEOS_DEPLOYMENT_TARGET=15.0 \
             clean archive \
